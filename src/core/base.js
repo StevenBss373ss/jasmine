@@ -614,32 +614,3 @@ var xdescribe = function(description, specDefinitions) {
   return jasmine.getEnv().xdescribe(description, specDefinitions);
 };
 if (isCommonJS) exports.xdescribe = xdescribe;
-
-
-// Provide the XMLHttpRequest class for IE 5.x-6.x:
-jasmine.XmlHttpRequest = (typeof XMLHttpRequest == "undefined") ? function() {
-  function tryIt(f) {
-    try {
-      return f();
-    } catch(e) {
-    }
-    return null;
-  }
-
-  var xhr = tryIt(function() {
-    return new ActiveXObject("Msxml2.XMLHTTP.6.0");
-  }) ||
-    tryIt(function() {
-      return new ActiveXObject("Msxml2.XMLHTTP.3.0");
-    }) ||
-    tryIt(function() {
-      return new ActiveXObject("Msxml2.XMLHTTP");
-    }) ||
-    tryIt(function() {
-      return new ActiveXObject("Microsoft.XMLHTTP");
-    });
-
-  if (!xhr) throw new Error("This browser does not support XMLHttpRequest.");
-
-  return xhr;
-} : XMLHttpRequest;
