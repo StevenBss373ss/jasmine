@@ -4,7 +4,9 @@ jasmine_files:
   - 'core/base.js'
   - 'core/util.js'
   - 'core/Reporter.js'
+  #end of known dependencies
   - 'html/HtmlReporterHelpers.js'
+  - 'html/HtmlReporter.js'
   - '**/*.js'
 jasmine_css_files:
   - 'html/jasmine.css'
@@ -13,7 +15,7 @@ stylesheets:
 helpers:
   - 'helpers/**/*.js'
 spec_files:
-  - '**/*[sS]pec.js'
+  - '**/*[Ss]pec.js'
 src_dir:
 spec_dir:
   - 'spec'
