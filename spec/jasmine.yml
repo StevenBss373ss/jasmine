@@ -5,6 +5,7 @@ jasmine_files:
   - 'core/util.js'
   - 'core/Reporter.js'
   - 'html/HtmlReporterHelpers.js'
+  - 'core/ExpectationResult.js'
   - '**/*.js'
 jasmine_css_files:
   - 'html/jasmine.css'
