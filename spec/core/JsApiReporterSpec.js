@@ -44,11 +44,6 @@ describe('jasmine.jsApiReporter', function() {
       };
     });
 
-    it('resultForSpec() should return the result for the given spec', function () {
-      expect(reporter.resultsForSpec(spec1.id)).toEqual(expectedSpec1Results);
-      expect(reporter.resultsForSpec(spec2.id)).toEqual(expectedSpec2Results);
-    });
-
     it('results() should return a hash of all results, indexed by spec id', function () {
       expect(reporter.results()[spec1.id]).toEqual(expectedSpec1Results);
       expect(reporter.results()[spec2.id]).toEqual(expectedSpec2Results);

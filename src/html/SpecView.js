@@ -33,7 +33,6 @@ jasmine.HtmlReporter.SpecView.prototype.refresh = function() {
   switch (this.status()) {
     case 'skipped':
       break;
-
     case 'passed':
       this.appendSummaryToSuiteDiv();
       break;

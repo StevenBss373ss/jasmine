@@ -44,10 +44,6 @@ jasmine.JsApiReporter.prototype.results = function() {
   return this.results_;
 };
 
-jasmine.JsApiReporter.prototype.resultsForSpec = function(specId) {
-  return this.results_[specId];
-};
-
 //noinspection JSUnusedLocalSymbols
 jasmine.JsApiReporter.prototype.reportRunnerResults = function(runner) {
   this.finished = true;
@@ -61,6 +57,7 @@ jasmine.JsApiReporter.prototype.reportSuiteResults = function(suite) {
 jasmine.JsApiReporter.prototype.reportSpecResults = function(spec) {
   this.results_[spec.id] = {
     messages: spec.results().getItems(),
+    //result is status
     result: spec.results().failedCount > 0 ? "failed" : "passed"
   };
 };
@@ -69,6 +66,7 @@ jasmine.JsApiReporter.prototype.reportSpecResults = function(spec) {
 jasmine.JsApiReporter.prototype.log = function(str) {
 };
 
+//TODO: make work with new presenter.
 jasmine.JsApiReporter.prototype.resultsForSpecs = function(specIds){
   var results = {};
   for (var i = 0; i < specIds.length; i++) {
@@ -83,10 +81,12 @@ jasmine.JsApiReporter.prototype.summarizeResult_ = function(result){
   var messagesLength = result.messages.length;
   for (var messageIndex = 0; messageIndex < messagesLength; messageIndex++) {
     var resultMessage = result.messages[messageIndex];
+    //TODO: use result presenter here, not a bunch of spec crap
     summaryMessages.push({
+      //TODO: remove text.
       text: resultMessage.type == 'log' ? resultMessage.toString() : jasmine.undefined,
       //TODO: wat? in theory this is saying non-expect results should always be considered passed, but that's weird.
-      passed: resultMessage.passed || true,
+      passed: resultMessage.passed || true, //status === 'passed'
       type: resultMessage.type,
       message: resultMessage.message,
       trace: {

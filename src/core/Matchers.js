@@ -5,6 +5,7 @@
  * @param {jasmine.Spec} spec
  */
 jasmine.Matchers = function(env, actual, spec, opt_isNot) {
+  //TODO: true dependency: equals, contains
   this.env = env;
   this.actual = actual;
   this.spec = spec;

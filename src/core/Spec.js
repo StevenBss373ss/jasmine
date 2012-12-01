@@ -14,6 +14,7 @@ jasmine.Spec = function(env, suite, description) {
     throw new Error('jasmine.Suite() required');
   }
   var spec = this;
+  //TODO: suite reponsibility instead of spec to minimize dependencies? How about it's just passed in?
   spec.id = env.nextSpecId ? env.nextSpecId() : null;
   spec.env = env;
   spec.suite = suite;
@@ -28,13 +29,21 @@ jasmine.Spec = function(env, suite, description) {
   spec.matchersClass = null;
 };
 
+//Parity Complete (gone)
 jasmine.Spec.prototype.getFullName = function() {
   return this.suite.getFullName() + ' ' + this.description + '.';
 };
 
 
+//TODO: results get reported.
+//Parity Complete (gone)
 jasmine.Spec.prototype.results = function() {
   return this.results_;
+};
+
+//Parity Complete (done)
+jasmine.Spec.prototype.status = function() {
+  return null;
 };
 
 /**
@@ -42,16 +51,19 @@ jasmine.Spec.prototype.results = function() {
  *
  * Be careful not to leave calls to <code>jasmine.log</code> in production code.
  */
+//Parity Complete (gone)
 jasmine.Spec.prototype.log = function() {
   return this.results_.log(arguments);
 };
 
+//Parity Complete (gone)
 jasmine.Spec.prototype.runs = function (func) {
   var block = new jasmine.Block(this.env, func, this);
   this.addToQueue(block);
   return this;
 };
 
+//Parity Complete (gone)
 jasmine.Spec.prototype.addToQueue = function (block) {
   if (this.queue.isRunning()) {
     this.queue.insertNext(block);
@@ -63,11 +75,14 @@ jasmine.Spec.prototype.addToQueue = function (block) {
 /**
  * @param {jasmine.ExpectationResult} result
  */
+//Parity Complete (done)
 jasmine.Spec.prototype.addMatcherResult = function(result) {
   this.results_.addResult(result);
 };
 
+//Parity Complete (done)
 jasmine.Spec.prototype.expect = function(actual) {
+  //TODO: matchersClass should use a closure to get stuff it needs, not pass an env all the way into the spec
   var positive = new (this.getMatchersClass_())(this.env, actual, this);
   positive.not = new (this.getMatchersClass_())(this.env, actual, this, true);
   return positive;
@@ -79,6 +94,7 @@ jasmine.Spec.prototype.expect = function(actual) {
  * @deprecated Use waitsFor() instead
  * @param {Number} timeout milliseconds to wait
  */
+//Parity Complete (gone)
 jasmine.Spec.prototype.waits = function(timeout) {
   var waitsFunc = new jasmine.WaitsBlock(this.env, timeout, this);
   this.addToQueue(waitsFunc);
@@ -92,6 +108,7 @@ jasmine.Spec.prototype.waits = function(timeout) {
  * @param {String} optional_timeoutMessage
  * @param {Number} optional_timeout
  */
+//Parity Complete (gone)
 jasmine.Spec.prototype.waitsFor = function(latchFunction, optional_timeoutMessage, optional_timeout) {
   var latchFunction_ = null;
   var optional_timeoutMessage_ = null;
@@ -126,10 +143,12 @@ jasmine.Spec.prototype.fail = function (e) {
   this.results_.addResult(expectationResult);
 };
 
+//kill
 jasmine.Spec.prototype.getMatchersClass_ = function() {
   return this.matchersClass || this.env.matchersClass;
 };
 
+//kill
 jasmine.Spec.prototype.addMatchers = function(matchersPrototype) {
   var parent = this.getMatchersClass_();
   var newMatchersClass = function() {
@@ -140,9 +159,12 @@ jasmine.Spec.prototype.addMatchers = function(matchersPrototype) {
   this.matchersClass = newMatchersClass;
 };
 
+//Parity Complete (done)
 jasmine.Spec.prototype.finishCallback = function() {
+//  this.env.reporter.reportSpecResults(jasmine.buildSpecResult(this));
   this.env.reporter.reportSpecResults(this);
 };
+
 
 jasmine.Spec.prototype.finish = function(onComplete) {
   this.removeAllSpies();
@@ -160,8 +182,10 @@ jasmine.Spec.prototype.after = function(doAfter) {
   }
 };
 
+//mostly complete: need async, need filter replacement somewhere (in wiring)
 jasmine.Spec.prototype.execute = function(onComplete) {
   var spec = this;
+  //TODO: this shouldn't be here.
   if (!spec.env.specFilter(spec)) {
     spec.results_.skipped = true;
     spec.finish(onComplete);
@@ -179,6 +203,7 @@ jasmine.Spec.prototype.execute = function(onComplete) {
   });
 };
 
+//Parity Complete (gone)
 jasmine.Spec.prototype.addBeforesAndAftersToQueue = function() {
   var runner = this.env.currentRunner();
   var i;
@@ -204,6 +229,7 @@ jasmine.Spec.prototype.addBeforesAndAftersToQueue = function() {
   }
 };
 
+//Parity Complete (gone)
 jasmine.Spec.prototype.explodes = function() {
   throw 'explodes function should not have been called';
 };
@@ -241,3 +267,53 @@ jasmine.Spec.prototype.removeAllSpies = function() {
   this.spies_ = [];
 };
 
+
+jasmine.Spec2 = function(attrs) {
+  this.failedExpectations = [];
+  this.encounteredExpectations = false;
+  this.expectationFactory = attrs.expectationFactory;
+  this.resultCallback = attrs.resultCallback;
+  this.id = attrs.id;
+  this.description = attrs.description;
+  this.fn = attrs.fn;
+  this.beforeFns = attrs.beforeFns || [];
+  this.afterFns = attrs.afterFns || [];
+};
+
+jasmine.Spec2.prototype.addExpectationResult = function(passed, data) {
+  this.encounteredExpectations = true;
+  if (!passed) {
+    this.failedExpectations.push(data);
+  }
+}
+
+jasmine.Spec2.prototype.expect = function(actual) {
+  return this.expectationFactory(actual, this);
+}
+
+jasmine.Spec2.prototype.execute = function() {
+  for (var i = 0; i < this.beforeFns.length; i++) {
+    this.beforeFns[i].call(this);
+  }
+  this.fn.call(this);
+  for (var i = 0; i < this.afterFns.length; i++) {
+    this.afterFns[i].call(this);
+  }
+  this.resultCallback({
+    id: this.id,
+    status: this.status(),
+    description: this.description,
+    failedExpectations: this.failedExpectations
+  });
+}
+
+jasmine.Spec2.prototype.status = function() {
+  if (!this.encounteredExpectations) {
+    return null;
+  }
+  if (this.failedExpectations.length > 0) {
+    return 'failed';
+  } else {
+    return 'passed';
+  }
+}

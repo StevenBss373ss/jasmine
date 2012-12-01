@@ -120,3 +120,102 @@ describe('Spec', function () {
     });
   });
 });
+describe("Spec (integration)", function() {
+  it("reports results for passing tests", function() {
+    var resultCallback = jasmine.createSpy('resultCallback'),
+    expectationFactory = function(actual, spec) {
+      expect(actual).toBe('some-actual');
+      return {
+        pass: function() {
+          spec.addExpectationResult(true);
+        }
+      }
+    },
+    spec = new jasmine.Spec2({
+      description: 'my test',
+      id: 'some-id',
+      fn: function() {
+        this.expect('some-actual').pass();
+      },
+      resultCallback: resultCallback,
+      expectationFactory: expectationFactory
+    });
+
+    spec.execute();
+
+    expect(resultCallback).toHaveBeenCalledWith({
+      id: "some-id",
+      status: "passed",
+      description: "my test",
+      failedExpectations: []
+    });
+  });
+  it("reports results for failing tests", function() {
+    var resultCallback = jasmine.createSpy('resultCallback'),
+    expectationFactory = function(actual, spec) {
+      expect(actual).toBe('some-actual');
+      return {
+        fail: function() {
+          spec.addExpectationResult(true);
+        }
+      }
+    },
+    spec = new jasmine.Spec2({
+      description: 'my test',
+      id: 'some-id',
+      fn: function() {
+        this.expect('some-actual').fail();
+      },
+      resultCallback: resultCallback,
+      expectationFactory: expectationFactory
+    });
+
+    spec.execute();
+
+    expect(resultCallback).toHaveBeenCalledWith({
+      id: "some-id",
+      status: "passed",
+      description: "my test",
+      failedExpectations: []
+    });
+  });
+
+  //TODO: test order of befores, spec, after.
+  it("executes before fns, after fns", function() {
+    var before = jasmine.createSpy('before'),
+    after = jasmine.createSpy('after'),
+    spec = new jasmine.Spec2({
+      fn: function() { },
+      beforeFns: [before],
+      afterFns: [after],
+      resultCallback: function() {}
+    });
+
+    spec.execute();
+
+    expect(before).toHaveBeenCalled();
+    expect(before.mostRecentCall.object).toBe(spec);
+
+    expect(after).toHaveBeenCalled();
+    expect(after.mostRecentCall.object).toBe(spec);
+  });
+});
+
+describe("Spec (real-ish unit tests)", function() {
+  it("status returns null by default", function() {
+    var spec = new jasmine.Spec2({});
+    expect(spec.status()).toBeNull();
+  });
+  it("status returns passed if all expectations in the spec have passed", function() {
+    var spec = new jasmine.Spec2('description', function() {});
+    spec.addExpectationResult(true);
+    expect(spec.status()).toBe('passed');
+  });
+  it("status returns failed if any expectations in the spec have failed", function() {
+    var spec = new jasmine.Spec2('description', function() {});
+    spec.addExpectationResult(true);
+    spec.addExpectationResult(false);
+    expect(spec.status()).toBe('failed');
+  });
+
+});
